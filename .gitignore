@@ -131,6 +131,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment files
+backend/.env
+frontend/.env.local
+
 # Spyder project settings
 .spyderproject
 .spyproject

@@ -35,15 +35,19 @@ check_port_available() {
     if command -v nc &> /dev/null; then
         nc -z localhost $port &>/dev/null
         if [ $? -eq 0 ]; then
+            echo_color "$YELLOW" "Port $port is in use."
             return 1  # Port is in use
         else
+            echo_color "$GREEN" "Port $port is available."
             return 0  # Port is available
         fi
     elif command -v lsof &> /dev/null; then
         lsof -i:$port &>/dev/null
         if [ $? -eq 0 ]; then
+            echo_color "$YELLOW" "Port $port is in use."
             return 1  # Port is in use
         else
+            echo_color "$GREEN" "Port $port is available."
             return 0  # Port is available
         fi
     else
@@ -177,10 +181,13 @@ fi
 
 # Check if ports are available and find alternatives if needed
 echo_color "$GREEN" "Checking port availability..."
+echo_color "$BLUE" "Checking frontend port: $FRONTEND_PORT"
 
 # Check Frontend port
 check_port_available $FRONTEND_PORT
-if [ $? -ne 0 ]; then
+FRONTEND_PORT_AVAILABLE=$?
+echo_color "$BLUE" "Frontend port $FRONTEND_PORT availability status: $FRONTEND_PORT_AVAILABLE"
+if [ $FRONTEND_PORT_AVAILABLE -ne 0 ]; then
     echo_color "$YELLOW" "Port $FRONTEND_PORT for frontend is already in use."
     NEW_PORT=$(find_available_port $((FRONTEND_PORT + 1)))
     if [ $? -eq 0 ]; then

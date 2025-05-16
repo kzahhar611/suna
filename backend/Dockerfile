@@ -28,7 +28,7 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn
 RUN pip install --no-cache-dir wheel setuptools
 
 # Build wheels for all dependencies
-RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt gunicorn
 
 # Stage 2: Final image
 FROM python:3.11-slim

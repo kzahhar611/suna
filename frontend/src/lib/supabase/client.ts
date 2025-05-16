@@ -1,5 +1,6 @@
 import { createBrowserClient } from '@supabase/ssr';
 
+// Supabase client
 export const createClient = () => {
   // Get URL and key from environment variables
   let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

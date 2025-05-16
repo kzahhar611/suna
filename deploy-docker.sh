@@ -102,7 +102,14 @@ export ENV_MODE FRONTEND_PORT BACKEND_PORT REDIS_PORT RABBITMQ_PORT RABBITMQ_MAN
 # Build and start Docker containers
 echo_color "$BLUE" "Building and starting Docker containers..."
 docker compose down
-docker compose build --no-cache
+
+# Build backend first
+echo_color "$BLUE" "Building backend image..."
+docker compose build backend
+
+# Build frontend
+echo_color "$BLUE" "Building frontend image..."
+docker compose build frontend
 
 echo_color "$BLUE" "Starting services..."
 docker compose up -d

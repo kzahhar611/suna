@@ -3,38 +3,62 @@ from daytona_api_client.models.workspace_state import WorkspaceState
 from dotenv import load_dotenv
 from utils.logger import logger
 from utils.config import config
+import os
 
 load_dotenv()
 
 logger.debug("Initializing Daytona sandbox configuration")
-daytona_config = DaytonaConfig(
-    api_key=config.DAYTONA_API_KEY,
-    server_url=config.DAYTONA_SERVER_URL,
-    target=config.DAYTONA_TARGET
-)
 
-if daytona_config.api_key:
-    logger.debug("Daytona API key configured successfully")
+# Check if we're missing Daytona API key (dev mode or production without key)
+DEV_MODE = not config.DAYTONA_API_KEY
+
+if not DEV_MODE:
+    # Normal Daytona initialization
+    daytona_config = DaytonaConfig(
+        api_key=config.DAYTONA_API_KEY,
+        server_url=config.DAYTONA_SERVER_URL,
+        target=config.DAYTONA_TARGET
+    )
+
+    if daytona_config.api_key:
+        logger.debug("Daytona API key configured successfully")
+    else:
+        logger.warning("No Daytona API key found in environment variables")
+
+    if daytona_config.server_url:
+        logger.debug(f"Daytona server URL set to: {daytona_config.server_url}")
+    else:
+        logger.warning("No Daytona server URL found in environment variables")
+
+    if daytona_config.target:
+        logger.debug(f"Daytona target set to: {daytona_config.target}")
+    else:
+        logger.warning("No Daytona target found in environment variables")
+
+    daytona = Daytona(daytona_config)
+    logger.debug("Daytona client initialized")
 else:
-    logger.warning("No Daytona API key found in environment variables")
+    logger.warning("Running in DEV_MODE without Daytona. Sandbox features will be mocked.")
+    daytona = None
 
-if daytona_config.server_url:
-    logger.debug(f"Daytona server URL set to: {daytona_config.server_url}")
-else:
-    logger.warning("No Daytona server URL found in environment variables")
-
-if daytona_config.target:
-    logger.debug(f"Daytona target set to: {daytona_config.target}")
-else:
-    logger.warning("No Daytona target found in environment variables")
-
-daytona = Daytona(daytona_config)
-logger.debug("Daytona client initialized")
-
+class MockSandbox:
+    """Mock sandbox class for development mode"""
+    def __init__(self, sandbox_id):
+        self.id = sandbox_id
+        self.instance = type('obj', (object,), {'state': 'RUNNING'})
+        self.process = type('obj', (object,), {
+            'create_session': lambda session_id: None,
+            'execute_session_command': lambda session_id, cmd: None
+        })
+        
 async def get_or_start_sandbox(sandbox_id: str):
     """Retrieve a sandbox by ID, check its state, and start it if needed."""
     
     logger.info(f"Getting or starting sandbox with ID: {sandbox_id}")
+    
+    if DEV_MODE:
+        logger.warning(f"DEV_MODE: Returning mock sandbox for ID: {sandbox_id}")
+        return MockSandbox(sandbox_id)
     
     try:
         sandbox = daytona.get_current_sandbox(sandbox_id)
@@ -64,6 +88,10 @@ async def get_or_start_sandbox(sandbox_id: str):
 
 def start_supervisord_session(sandbox: Sandbox):
     """Start supervisord in a session."""
+    if DEV_MODE:
+        logger.warning("DEV_MODE: Skipping supervisord session start for mock sandbox")
+        return
+        
     session_id = "supervisord-session"
     try:
         logger.info(f"Creating session {session_id} for supervisord")
@@ -81,6 +109,11 @@ def start_supervisord_session(sandbox: Sandbox):
 
 def create_sandbox(password: str, project_id: str = None):
     """Create a new sandbox with all required services configured and running."""
+    
+    if DEV_MODE:
+        logger.warning(f"DEV_MODE: Creating mock sandbox with project_id: {project_id}")
+        mock_sandbox = MockSandbox(project_id or 'mock-sandbox-id')
+        return mock_sandbox
     
     logger.debug("Creating new Daytona sandbox environment")
     logger.debug("Configuring sandbox with browser-use image and environment variables")
