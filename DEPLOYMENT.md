@@ -43,13 +43,18 @@ The included `deploy.sh` script automates the deployment process:
 
 # For using pre-built images from GitHub Container Registry
 ./deploy.sh --github-username your-username --use-prebuilt
+
+# Specify custom ports
+./deploy.sh --frontend-port 3001 --backend-port 8001 --redis-port 6380 --rabbitmq-port 5673
 ```
 
 The script will:
 1. Check prerequisites
-2. Create environment files if they don't exist
-3. Build or pull required Docker images
-4. Start all services with Docker Compose
+2. Verify port availability and find alternative ports if needed
+3. Create environment files if they don't exist
+4. Build or pull required Docker images
+5. Apply custom port configurations
+6. Start all services with Docker Compose
 
 ### Option 2: Manual Deployment
 

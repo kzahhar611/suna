@@ -7,6 +7,7 @@ This repository contains deployment scripts and configuration for the Suna AI Ag
 - **Automated Deployment**: Simple shell script for one-command deployment
 - **Docker-based**: All components run in containers for consistent deployment
 - **Flexible Configuration**: Use local builds or pre-built images
+- **Dynamic Port Management**: Automatic port availability checking and reassignment
 - **Environment Management**: Helper functions for environment setup
 
 ## Quick Start
@@ -41,6 +42,16 @@ Use pre-built images from GitHub Container Registry:
 ```bash
 ./deploy.sh --github-username your-username --use-prebuilt
 ```
+
+### Custom Ports
+
+Specify custom ports for services:
+
+```bash
+./deploy.sh --frontend-port 3001 --backend-port 8001
+```
+
+The script automatically checks if specified ports are available. If a port is already in use, it will find the next available port automatically.
 
 ## Configuration
 
